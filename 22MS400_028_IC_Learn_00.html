@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>노래 익히기</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      position: absolute;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+   .wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wrapper iframe {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #loading {
+    position: fixed;
+    background-color: #fff;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  canvas {
+    -webkit-tap-highlight-color: transparent;
+  }
+  </style>
+</head>
+
+<body>
+  <script>
+    (function () {
+
+      // 여기에 컨텐츠 넣어주시면 됩니다.
+      var sources = [
+        "./sub/index1.html",
+        "./sub/index2.html",
+        "./sub/index3.html",
+        "./sub/index4.html",
+      ];
+
+      var iframeElements = [];
+      var loadingElement = createLoadingElement();
+
+      function init() {
+        createIframeElements();
+        contentLoadingCheck();
+
+        // flash에서 호출할 수 있도록
+        window.swapContent = swapContent;
+      }
+
+      // 컨텐츠 스왑
+      function swapContent(fileName) {
+        var total = iframeElements.length;
+        for (var i = 0; i < total; i++) {
+          var iframe = iframeElements[i];
+          var src = iframe.getAttribute("src");
+          iframe.style.display = src.indexOf(fileName) > -1 ? "block" : "none";
+        }
+      }
+
+      // 프리로딩 생성
+      function createLoadingElement() {
+        var wrapper = document.createElement("div");
+        wrapper.id = "loading";
+        wrapper.innerHTML = '<img src="./images/preloader.gif" alt="loading">';
+        document.body.appendChild(wrapper);
+        return wrapper;
+      }
+
+      // 아이프레임 엘리먼트 생성
+      function createIframeElements() {
+        var wrapper = document.createElement("div");
+        wrapper.className = "wrapper";
+        for (var i = 0; i < sources.length; i++) {
+          var source = sources[i];
+          var iframeElement = document.createElement("iframe");
+          iframeElement.setAttribute("frameborder", "no");
+          iframeElement.width="100%";
+          iframeElement.height="100%";
+          iframeElement.src = source;
+          iframeElements.push(iframeElement);
+          wrapper.appendChild(iframeElement);
+        }
+        document.body.appendChild(wrapper);
+      }
+
+      // 모든 아이프레임 로딩 완료 체크
+      function contentLoadingCheck() {
+        var loadedCount = 0;
+        var totalCount = iframeElements.length;
+        function onLoadIframe(target) {
+          loadedCount++;
+          if (loadedCount >= totalCount) {
+            document.body.removeChild(loadingElement);
+            // 로딩 끝나고 첫 번째 컨텐츠 노출
+            setTimeout(function(){
+              swapContent(sources[0]);
+            }, 200);
+            
+          }
+        };
+        [].forEach.call(iframeElements, function (el) {
+          el.addEventListener("load", onLoadIframe, { once: true });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    })();
+  </script>
+</body>
+
+</html>
